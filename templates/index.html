@@ -1,0 +1,83 @@
+html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestor de Tareas</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #f5f5f5; }
+        h1 { color: #333; }
+        .form-agregar { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .form-agregar input, .form-agregar textarea { width: 100%; padding: 8px; margin: 5px 0 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .form-busqueda { margin-bottom: 20px; }
+        .form-busqueda input { padding: 8px; width: 300px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-busqueda button { padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn { padding: 6px 14px; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 14px; }
+        .btn-agregar { background: #4CAF50; }
+        .btn-eliminar { background: #f44336; }
+        .btn-actualizar { background: #FF9800; }
+        .tarea { background: #fff; padding: 15px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tarea.completada { opacity: 0.6; }
+        .tarea h3 { margin: 0 0 5px; }
+        .tarea p { margin: 5px 0; color: #666; }
+        .editar-form { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; }
+        .editar-form input, .editar-form textarea { padding: 6px; margin: 3px 0; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Gestor de Tareas</h1>
+
+    <!-- FORMULARIO AGREGAR -->
+    <div class="form-agregar">
+        <h2>Agregar Nueva Tarea</h2>
+        <form action="/agregar" method="POST">
+            <input type="text" name="titulo" id="titulo" placeholder="Título de la tarea" required>
+            <textarea name="descripcion" id="descripcion" placeholder="Descripción (opcional)" rows="2"></textarea>
+            <button type="submit" class="btn btn-agregar" id="btn-agregar">Agregar Tarea</button>
+        </form>
+    </div>
+
+    <!-- FORMULARIO BUSCAR -->
+    <div class="form-busqueda">
+        <form action="/" method="GET">
+            <input type="text" name="q" id="campo-busqueda" placeholder="Buscar por título..." value="{{ busqueda }}">
+            <button type="submit" class="btn" style="background:#2196F3;" id="btn-buscar">Buscar</button>
+            {% if busqueda %}
+            <a href="/" style="margin-left:10px;">Mostrar todas</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- LISTA DE TAREAS -->
+    <div id="lista-tareas">
+        {% if tareas %}
+            {% for tarea in tareas %}
+            <div class="tarea {% if tarea.completada %}completada{% endif %}" data-id="{{ tarea.id }}">
+                <h3>{{ tarea.titulo }}</h3>
+                <p>{{ tarea.descripcion or 'Sin descripción' }}</p>
+                <p><strong>Estado:</strong> {{ 'Completada' if tarea.completada else 'Pendiente' }}</p>
+
+                <!-- Formulario editar -->
+                <details class="editar-form">
+                    <summary class="btn btn-actualizar">Editar</summary>
+                    <form action="/actualizar/{{ tarea.id }}" method="POST" style="margin-top:10px;">
+                        <input type="text" name="titulo" value="{{ tarea.titulo }}" style="width:100%;">
+                        <textarea name="descripcion" rows="2" style="width:100%;">{{ tarea.descripcion }}</textarea>
+                        <label><input type="checkbox" name="completada" {% if tarea.completada %}checked{% endif %}> Completada</label>
+                        <br>
+                        <button type="submit" class="btn btn-actualizar" style="margin-top:5px;">Guardar Cambios</button>
+                    </form>
+                </details>
+
+                <!-- Botón eliminar -->
+                <form action="/eliminar/{{ tarea.id }}" method="POST" style="display:inline; margin-top:10px;">
+                    <button type="submit" class="btn btn-eliminar">Eliminar</button>
+                </form>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color:#999;">No hay tareas{% if busqueda %} que coincidan con "{{ busqueda }}"{% endif %}.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
